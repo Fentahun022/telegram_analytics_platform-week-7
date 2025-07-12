@@ -1,0 +1,25 @@
+
+# Environment
+.env
+.venv/
+env/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# dbt
+.dbt/
+logs/
+target/
+
+# Data (optional, if your data is too large for Git)
+# data/
+
+# IDE files
+.idea/
+.vscode/
+

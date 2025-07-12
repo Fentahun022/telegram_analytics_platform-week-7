@@ -1,0 +1,25 @@
+# Data Scraping & DB
+telethon
+psycopg2-binary
+
+# Transformation
+dbt-postgres
+
+# Enrichment
+ultralytics
+torch
+torchvision
+
+# API
+fastapi
+uvicorn[standard]
+SQLAlchemy
+
+# Orchestration
+dagster
+dagster-webserver
+dagster-dbt
+dagster-postgres
+
+# Utilities
+python-dotenv
