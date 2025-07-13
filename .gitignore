@@ -16,8 +16,8 @@ __pycache__/
 logs/
 target/
 
-# Data (optional, if your data is too large for Git)
-# data/
+
+data/
 
 # IDE files
 .idea/
