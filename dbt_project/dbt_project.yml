@@ -1,0 +1,16 @@
+# dbt_project/dbt_project.yml
+name: 'telegram_analytics'
+version: '1.0.0'
+config-version: 2
+profile: 'telegram_analytics'
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+models:
+  telegram_analytics:
+    marts:
+      +materialized: table
+      +schema: analytics
+    staging:
+      +materialized: view
+      +schema: analytics

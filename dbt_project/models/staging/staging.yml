@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: public
+    schema: public
+    tables:
+      - name: raw_telegram_messages
+        description: "Raw JSON data loaded from Telegram scraping."
+
+models:
+  - name: stg_telegram_messages
+    description: "Cleans and extracts fields from the raw JSON messages."
+    columns:
+      - name: message_id
+        description: "The unique identifier for a message."
+        tests:
+          - unique
+          - not_null
+      - name: channel_id
+        description: "The unique identifier for the Telegram channel."
+        tests:
+          - not_null
