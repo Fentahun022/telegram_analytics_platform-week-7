@@ -5,8 +5,7 @@ from telethon import TelegramClient
 from datetime import datetime
 from dotenv import load_dotenv
 
-# --- Configuration ---
-# Load environment variables from .env file
+
 load_dotenv()
 
 API_ID = os.getenv('API_ID')
@@ -17,8 +16,8 @@ SESSION_NAME = 'telegram_scraper' # This will create a file named telegram_scrap
 CHANNELS = [
     'lobelia4cosmetics',
     'tikvahpharma',
-    'CheMed123', # Another example channel
-    # Add more channels from https://et.tgstat.com/medicine
+    'CheMed123',
+    
 ]
 
 DATA_LAKE_MESSAGES_PATH = 'data/raw/telegram_messages'
@@ -37,10 +36,10 @@ async def scrape_channel(client, channel_name):
 
     print(f"Scraping channel: {channel_name}")
     try:
-        # Get the channel entity to make sure it exists
+      
         channel_entity = await client.get_entity(channel_name)
         
-        # Iterate through messages, limit can be adjusted
+    
         async for message in client.iter_messages(channel_entity, limit=200):
             if message.text or message.photo:
                 # Convert message object to a dictionary for JSON serialization
@@ -65,10 +64,9 @@ async def scrape_channel(client, channel_name):
 
 async def main():
     """Main function to initialize client and start scraping."""
-    # Create the data directories if they don't exist
-    os.makedirs(DATA_LAKE_IMAGES_PATH, exist_ok=True)
     
-    # The 'async with' block handles connecting and disconnecting automatically
+    os.makedirs(DATA_LAKE_IMAGES_PATH, exist_ok=True)
+ 
     async with TelegramClient(SESSION_NAME, API_ID, API_HASH) as client:
         for channel in CHANNELS:
             await scrape_channel(client, channel)
@@ -76,5 +74,4 @@ async def main():
     print("\nScraping session finished.")
 
 if __name__ == "__main__":
-    # This ensures the async main function is run correctly
     asyncio.run(main())
