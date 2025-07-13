@@ -23,3 +23,6 @@ target/
 .idea/
 .vscode/
 
+data/ # Optionally ignore data if it's too large for git
+*.db
+
