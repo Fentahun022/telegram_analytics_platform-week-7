@@ -1,22 +1,12 @@
+# dbt_project/models/staging/sources.yml
 version: 2
 
 sources:
-  - name: public
-    schema: public
+  - name: raw_telegram
+    description: "Raw data loaded from the Telegram scraper."
+    schema: raw
     tables:
-      - name: raw_telegram_messages
-        description: "Raw JSON data loaded from Telegram scraping."
-
-models:
-  - name: stg_telegram_messages
-    description: "Cleans and extracts fields from the raw JSON messages."
-    columns:
-      - name: message_id
-        description: "The unique identifier for a message."
-        tests:
-          - unique
-          - not_null
-      - name: channel_id
-        description: "The unique identifier for the Telegram channel."
-        tests:
-          - not_null
+      - name: telegram_messages
+        description: "Contains one row per message with the raw JSON payload."
+      - name: image_detections # <-- ADD THIS NEW TABLE DEFINITION
+        description: "Raw object detection results from YOLO model."

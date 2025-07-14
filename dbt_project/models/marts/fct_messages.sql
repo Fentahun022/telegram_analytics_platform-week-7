@@ -1,22 +1,19 @@
+-- Final version
+
 with messages as (
     select * from {{ ref('stg_telegram_messages') }}
 ),
-
 channels as (
-    select
-        channel_id,
-        row_number() over (order by channel_id) as channel_pk -- Surrogate key
-    from {{ ref('dim_channels') }}
+    select * from {{ ref('dim_channels') }}
 )
-
 select
-    m.message_id as message_pk,
-    c.channel_pk as channel_fk,
-    m.message_timestamp,
-    m.message_text,
-    m.views as view_count,
-    length(m.message_text) as message_length,
-    m.has_media as has_image,
-    m.image_path
-from messages m
-left join channels c on m.channel_id = c.channel_id
+    {{ dbt_utils.generate_surrogate_key(['messages.message_id']) }} as message_pk,
+    channels.channel_pk as channel_fk, -- This is the line that was failing
+    messages.message_id,
+    messages.message_text,
+    messages.view_count,
+    messages.has_image,
+    messages.posted_at
+from 
+    messages
+left join channels on messages.channel_name = channels.channel_name
