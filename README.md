@@ -42,60 +42,36 @@ Step 4: Run the Data Pipeline
 Execute the following commands in order from the project root directory.
 
 1.  **Install Python Dependencies (in a virtual environment):**
-    ```bash
     python -m venv .venv
     source .venv/bin/activate  
     pip install -r requirements.txt
-    ```
+
 
 2.  **Run the Scraper (Task 1):**
     This script will connect to Telegram and populate the `./data/raw/` directory. The first time, it will ask for your phone number and a login code.
-    ```bash
     python scripts/scrape_telegram.py
-    ```
+
 
 3.  **Load Raw Data into the Warehouse:**
     This script loads the new JSON files into the `raw` schema in PostgreSQL.
-    ```bash
     python scripts/load_raw_to_postgres.py
-    ```
+ 
 
 4.  **Install dbt Dependencies:**
     This downloads the `dbt-utils` package required by our models.
-    ```bash
     dbt deps --project-dir ./dbt_project
-    ```
+ 
 
 5.  **Run the dbt Transformations (Task 2):**
     This is the core transformation step. It builds all the staging and mart models.
-    ```bash
+ 
     dbt run --project-dir ./dbt_project
-    ```
+
 
 6.  **Test the Data:**
     Run the data quality tests defined in the `dbt` project to ensure integrity.
-    ```bash
     dbt test --project-dir ./dbt_project
-    ```
+
 
 🎉 **Success!** If all commands complete without error, you have successfully built the data warehouse. You can connect to the PostgreSQL database on port `5433` to explore the tables in the `marts` schema.
 
----
-
-## 4. Project Structure Explained
-
-A clear separation of concerns is used to keep the project organized and scalable.
-
-```
-.
-├── api/              # (Future) FastAPI application
-├── data/             # Raw data lake (ignored by Git)
-├── dbt_project/      # All dbt models, tests, and configuration
-│   ├── models/
-│   │   ├── staging/  # Cleans and prepares raw data
-│   │   └── marts/    # Final analytics-ready star schema
-├── scripts/          # Standalone Python scripts (scraping, loading)
-├── .env              # Local secrets (never commit)
-├── .env.example      # Template for environment variables
-├── docker-compose.yml# Orchestrates all services
-└── README.md         # This documentation file
