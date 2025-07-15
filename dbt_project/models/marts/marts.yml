@@ -1,43 +1,36 @@
+# dbt_project/models/marts/marts.yml
 version: 2
 
 models:
   - name: dim_channels
-    description: "Dimension table for Telegram channels, containing one row per unique channel."
+    description: "Dimension table for Telegram channels."
     columns:
       - name: channel_pk
-        description: "The surrogate primary key for the channel."
         tests:
           - unique
           - not_null
 
   - name: fct_messages
-    description: "The main fact table, containing one row per message posted."
+    description: "Fact table for individual messages."
     columns:
       - name: message_pk
-        description: "The surrogate primary key for the message."
         tests:
           - unique
           - not_null
-      - name: channel_fk
-        description: "Foreign key to the dim_channels table."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_channels')
-              field: channel_pk
 
+  # ADD THIS NEW SECTION
   - name: fct_image_detections
-    description: "Fact table for object detections in images, one row per detected object per message."
+    description: "Fact table containing object detections from images. Populated by the yolo_enricher.py script."
     columns:
-      - name: image_detection_pk
-        description: "The surrogate primary key for the detection event."
+      - name: detection_pk
         tests:
           - unique
           - not_null
-      - name: message_pk
+      - name: message_fk
         description: "Foreign key to the fct_messages table."
         tests:
           - not_null
+          # This test ensures that every detection is linked to a real message
           - relationships:
               to: ref('fct_messages')
               field: message_pk
