@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:13
     container_name: postgres_db
     environment:
+      # These are still needed to pass secrets from the .env file
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -22,15 +21,24 @@ services:
       - "8000:8000"  
       - "3000:3000"  
     volumes:
-      - .:/app  
+      - .:/app
+      # This volume makes the Dagster home directory persist
+      - dagster_home:/opt/dagster/dagster_home
     environment:
+      # Keep these to pass secrets
       - API_ID=${API_ID}
       - API_HASH=${API_HASH}
+      # The DB credentials are also needed by the app at runtime
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - DB_HOST=db 
       - DB_PORT=${DB_PORT}
+    command: >
+      bash -c "dagster-daemon run & 
+               dagster dev -h 0.0.0.0 -p 3000 -m dagster_project & 
+               uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
   postgres_data:
+  dagster_home:
