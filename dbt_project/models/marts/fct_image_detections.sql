@@ -1,39 +1,29 @@
+-- models/marts/fct_image_detections.sql
 
+-- This model makes dbt aware of the fct_image_detections table,
+-- which is populated by an external Python script (yolo_enricher.py).
+-- We use an 'incremental' materialization with a 'false' condition to prevent dbt
+-- from ever inserting data, while still allowing it to manage the table's existence.
 
-with detections as (
-  
-    select * from {{ ref('stg_image_detections') }}
-),
+{{
+    config(
+        materialized='incremental',
+        unique_key='detection_pk'
+    )
+}}
 
-messages as (
-    -- Get the message fact table, which contains our necessary primary and foreign keys
-    select 
-        message_id, 
-        message_pk,
-        channel_fk 
-    from {{ ref('fct_messages') }}
-)
+-- The main body of the model will only be used to build the table
+-- on the very first run, or if the table is dropped manually.
+select
+    CAST(null AS INTEGER) as detection_pk,
+    CAST(null AS BIGINT) as message_fk,
+    CAST(null AS VARCHAR) as detected_object_class,
+    CAST(null AS FLOAT) as confidence_score
 
-select 
-    -- CORRECT: Create a new surrogate primary key for this fact table.
-    -- This ensures every row (a unique object detection in a unique message) is identifiable.
-    {{ dbt_utils.generate_surrogate_key(['detections.message_id', 'detections.detected_object']) }} as image_detection_pk,
-
-    -- CORRECT: Select the foreign key to the messages table.
-    messages.message_pk,
-    
-    -- CORRECT: Select the foreign key to the channels table.
-    messages.channel_fk,
-
-    -- The actual facts from this table
-    detections.detected_object,
-    detections.confidence_score
-
-from detections
-
--- Join back to the messages table on the natural key to get the correct surrogate keys
-left join messages on detections.message_id = messages.message_id
-where
-    -- Data quality check: ensure the join was successful. This prevents orphan records
-    -- in the image detections fact table.
-    messages.message_pk is not null
+-- The 'is_incremental()' macro returns 'false' on the first run, building the table.
+-- On subsequent runs, it returns 'true'. The 'where false' condition ensures
+-- that dbt never attempts to insert or update any rows into this table,
+-- leaving that responsibility to our Python script.
+{% if is_incremental() %}
+    where 1=0
+{% endif %}
