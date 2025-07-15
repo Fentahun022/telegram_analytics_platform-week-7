@@ -10,6 +10,7 @@ ultralytics
 torch
 torchvision
 
+
 # API
 fastapi
 uvicorn[standard]

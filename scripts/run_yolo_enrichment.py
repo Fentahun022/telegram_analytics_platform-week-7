@@ -1,13 +1,12 @@
-import os
-import psycopg2
+# scripts/run_yolo_enrichment.py
+import os, psycopg2, logging
 from ultralytics import YOLO
 from dotenv import load_dotenv
-import logging
 
+# --- Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 load_dotenv()
 
-# --- Configuration ---
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_USER = os.getenv("POSTGRES_USER")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
@@ -44,28 +43,25 @@ def enrich_images():
             setup_yolo_table(cur)
             conn.commit()
 
-            # Load a pre-trained YOLOv8 model
-            model = YOLO('yolov8n.pt') # 'n' for nano, it's fast
+            logging.info("Loading YOLOv8 model...")
+            model = YOLO('yolov8n.pt') # 'n' for nano is small and fast
 
             image_files = [f for f in os.listdir(DATA_LAKE_IMAGES_PATH) if f.endswith('.jpg')]
             logging.info(f"Found {len(image_files)} images to process.")
 
             for image_file in image_files:
                 image_path = os.path.join(DATA_LAKE_IMAGES_PATH, image_file)
-                # The message_id is the filename without the extension
                 message_id = int(os.path.splitext(image_file)[0])
 
-                # Run YOLO detection
-                results = model(image_path)
+                results = model(image_path, verbose=False) # verbose=False cleans up console output
 
                 for r in results:
                     for box in r.boxes:
                         class_name = model.names[int(box.cls)]
                         confidence = float(box.conf)
 
-                        if confidence > 0.4: # Set a confidence threshold
+                        if confidence > 0.45: # Confidence threshold
                             logging.info(f"  -> Detected '{class_name}' in image for message {message_id} (confidence: {confidence:.2f})")
-                            # Use ON CONFLICT to make the script re-runnable
                             cur.execute("""
                                 INSERT INTO raw.image_detections (message_id, detected_object, confidence_score)
                                 VALUES (%s, %s, %s)

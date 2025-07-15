@@ -75,3 +75,19 @@ Execute the following commands in order from the project root directory.
 
 🎉 **Success!** If all commands complete without error, you have successfully built the data warehouse. You can connect to the PostgreSQL database on port `5433` to explore the tables in the `marts` schema.
 
+
+
+
+#  graph TD
+    subgraph "Extract & Load"
+        A[Telegram Channels] -->|Telethon Scraper| B[Raw JSON & Images <br> (Data Lake)];
+        B -->|Load Script| C[PostgreSQL DW <br> (raw schema)];
+    end
+
+    subgraph "Transform"
+        C -->|dbt| D[Staging Models];
+        D -->|dbt| E[Marts Layer <br> (Star Schema)];
+    end
+
+    style C fill:#cde4ff,stroke:#6699ff
+    style E fill:#d5f5e3,stroke:#58d68d

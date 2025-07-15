@@ -1,19 +1,39 @@
--- models/marts/fct_image_detections.sql
+
 
 with detections as (
-    -- This should reference a staging model for your YOLO results
-    select * from {{ ref('stg_image_detections') }} 
+  
+    select * from {{ ref('stg_image_detections') }}
 ),
+
 messages as (
-    -- We need fct_messages to get the foreign keys
-    select message_id, channel_fk from {{ ref('fct_messages') }}
+    -- Get the message fact table, which contains our necessary primary and foreign keys
+    select 
+        message_id, 
+        message_pk,
+        channel_fk 
+    from {{ ref('fct_messages') }}
 )
+
 select 
-    detections.message_id,
-    messages.channel_fk, -- <-- CORRECT: Get the foreign key from the messages fact table
+    -- CORRECT: Create a new surrogate primary key for this fact table.
+    -- This ensures every row (a unique object detection in a unique message) is identifiable.
+    {{ dbt_utils.generate_surrogate_key(['detections.message_id', 'detections.detected_object']) }} as image_detection_pk,
+
+    -- CORRECT: Select the foreign key to the messages table.
+    messages.message_pk,
+    
+    -- CORRECT: Select the foreign key to the channels table.
+    messages.channel_fk,
+
+    -- The actual facts from this table
     detections.detected_object,
     detections.confidence_score
 
 from detections
--- Join to the messages fact table on the shared message_id
+
+-- Join back to the messages table on the natural key to get the correct surrogate keys
 left join messages on detections.message_id = messages.message_id
+where
+    -- Data quality check: ensure the join was successful. This prevents orphan records
+    -- in the image detections fact table.
+    messages.message_pk is not null

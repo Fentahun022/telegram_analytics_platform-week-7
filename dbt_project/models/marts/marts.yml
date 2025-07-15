@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: "Dimension table for Telegram channels, containing one row per unique channel."
+    columns:
+      - name: channel_pk
+        description: "The surrogate primary key for the channel."
+        tests:
+          - unique
+          - not_null
+
+  - name: fct_messages
+    description: "The main fact table, containing one row per message posted."
+    columns:
+      - name: message_pk
+        description: "The surrogate primary key for the message."
+        tests:
+          - unique
+          - not_null
+      - name: channel_fk
+        description: "Foreign key to the dim_channels table."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_channels')
+              field: channel_pk
+
+  - name: fct_image_detections
+    description: "Fact table for object detections in images, one row per detected object per message."
+    columns:
+      - name: image_detection_pk
+        description: "The surrogate primary key for the detection event."
+        tests:
+          - unique
+          - not_null
+      - name: message_pk
+        description: "Foreign key to the fct_messages table."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_messages')
+              field: message_pk
