@@ -25,11 +25,11 @@ select
     
     raw_message ->> 'message' as message_text,
     
-    -- A boolean check for the presence of a photo/media object
+    
     (raw_message -> 'photo') is not null as has_image
 
 from source
 where 
-    -- Basic data cleaning: only include messages that have some text content
+   
     raw_message ->> 'message' is not null 
     and raw_message ->> 'message' != ''

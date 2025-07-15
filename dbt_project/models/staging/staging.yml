@@ -8,5 +8,5 @@ sources:
     tables:
       - name: telegram_messages
         description: "Contains one row per message with the raw JSON payload."
-      - name: image_detections # <-- ADD THIS NEW TABLE DEFINITION
+      - name: image_detections 
         description: "Raw object detection results from YOLO model."
